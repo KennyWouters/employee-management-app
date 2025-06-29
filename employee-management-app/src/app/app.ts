@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import {RouterModule, RouterOutlet} from '@angular/router';
 import {EmployeeTable} from './employee-table/employee-table';
+
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, EmployeeTable],
+  imports: [RouterOutlet, EmployeeTable, RouterModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
