@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Employee} from '../../Models/employee';
 import {EmployeeService} from '../employee';
 import {CommonModule} from '@angular/common';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-employee-table',
@@ -13,7 +14,7 @@ export class EmployeeTable implements OnInit {
 
   employees: Employee[] = [];
 
-  constructor(private employeeService: EmployeeService) { }
+  constructor(private employeeService: EmployeeService, private router: Router) { }
 
   ngOnInit() {
     // Add some mock data for testing
@@ -36,8 +37,6 @@ export class EmployeeTable implements OnInit {
       }
     ];
 
-    console.log('Initial employees:', this.employees);
-
     // Try to load from API with a delay to see the mock data first
     setTimeout(() => {
       this.employeeService.getEmployees().subscribe({
@@ -46,7 +45,7 @@ export class EmployeeTable implements OnInit {
           console.log('Response type:', typeof data);
           console.log('Response length:', data?.length);
           console.log('Is array?', Array.isArray(data));
-          
+
           // Only update if we get valid data with actual employee objects
           if (data && Array.isArray(data) && data.length > 0 && data[0].id) {
             this.employees = data;
@@ -63,4 +62,26 @@ export class EmployeeTable implements OnInit {
       });
     }, 2000); // 2 second delay
   }
+
+
+  // The (response) parameter is not used in this method, so it can be removed
+  // It's used in case you want to log or process the response after creating an employee
+  // Best practice is to not keep unused parameters, but for now, I will keep it
+
+  deleteEmployee(id: number) {
+    this.employeeService.deleteEmployee(id).subscribe({
+      next: (response) => {
+        this.employees = this.employees.filter(emp => emp.id !== id);
+      },
+      error: (error) => {
+        console.error('Error deleting employee', error);
+      }
+    });
+  }
+
+  editEmployee(id: number) {
+    this.router.navigate(['/edit/' + id]);
+
+  }
+
 }

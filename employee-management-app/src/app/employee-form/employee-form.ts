@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {Employee} from '../../Models/employee';
 import {EmployeeService} from '../employee';
+import {Router, ActivatedRoute} from '@angular/router';
+
+
 
 @Component({
   selector: 'app-employee-form',
@@ -9,7 +12,7 @@ import {EmployeeService} from '../employee';
   templateUrl: './employee-form.html',
   styleUrl: './employee-form.css'
 })
-export class EmployeeForm {
+export class EmployeeForm implements OnInit {
 
   employee: Employee = {
     id: 0,
@@ -20,14 +23,64 @@ export class EmployeeForm {
     position: ''
   }
 
-  constructor(private employeeService: EmployeeService) { }
+  isEditing: boolean = false;
+
+
+
+  errorMessage: string = '';
+
+  constructor(private employeeService: EmployeeService,
+              private router: Router,
+              private route: ActivatedRoute
+              ) { }
+
+
+  ngOnInit() {
+    this.route.paramMap.subscribe((result) => {
+      const id = result.get('id')
+
+      if (id){
+        // If we have an ID, we are editing an existing employee
+        this.isEditing = true;
+
+        this.employeeService.getEmployeeById(Number(id)).subscribe({
+          next: (result) => this.employee = result,
+          error: (error) => this.errorMessage = `Error Occured (${error.status})`,
+        })
+      }
+    });
+  }
 
   onSubmit() {
-    console.log(this.employee);
 
-    //TODO add logic to create an employee
+    if (this.isEditing) {
+      // If we are editing, call the editEmployee method
+      this.employeeService.editEmployee(this.employee)
+        .subscribe({
+          next: () => {
+            this.router.navigate((['/']));
+          },
+          error: (error) => {
+            console.error(error);
+            this.errorMessage = `Error Occured (${error.status})`;
+          }
+        });
+    } else {
+      this.employeeService.createEmployee(this.employee)
+        .subscribe({
+          next: () => {
+            this.router.navigate((['/']));
 
-    this.employeeService.createEmployee(this.employee)
-      .subscribe((result) => console.log(result));
+          },
+
+          error: (error) => {
+            console.error(error);
+            this.errorMessage = `Error Occured (${error.status})`;
+
+          }
+        });
+    }
+
+
   }
 }
